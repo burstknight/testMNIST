@@ -1,4 +1,5 @@
 from typing import Tuple
+from attr import s
 import numpy as np
 import cv2
 
@@ -111,10 +112,11 @@ class myDatasetIterator:
     =========================================================
     This class is an iterator that can travel whole dataset.
     """
-    def __init__(self, oDataset:myDataset) -> None:
+    def __init__(self, oDataset:myDataset, iBatchSize:int=1) -> None:
         self.__m_oDataset = oDataset
         self.__m_viIndex = []
         self.__m_iIndex = 0
+        self.__m_iBatchSize = iBatchSize
     # End of constructor
 
     @property
@@ -153,11 +155,11 @@ class myDatasetIterator:
         # End of for-loop
     # End of myDatasetIterator::init
 
-    def getExample(self, isFlatten:bool=True) -> Tuple[np.ndarray, int]:
+    def getExample(self) -> Tuple[np.ndarray, np.ndarray]:
         """
         Description:
         ======================================================
-        Get an example.
+        Get examples.
 
         Args:
         ======================================================
@@ -165,16 +167,18 @@ class myDatasetIterator:
 
         Returns: 
         ======================================================
-        - rtype: np.ndarray, the image
-        - rtype: int, the label
+        - rtype: np.ndarray, the batch images
+        - rtype: np.ndarray, the batch labels
         """
-        mImage, iLabel = self.__m_oDataset.getItem(self.__m_viIndex[self.__m_iIndex])
+        mBatchImage = np.zeros((self.__m_iBatchSize, self.__m_oDataset.iCols*self.__m_oDataset.iRows), dtype="uint8")
+        mLabel = np.zeros((self.__m_iBatchSize, ), dtype="uint8")
+        for i in range(self.__m_iBatchSize):
+            mImage, iLabel = self.__m_oDataset.getItem(self.__m_viIndex[self.__m_iIndex + i])
+            mBatchImage[i, :] = mImage 
+            mLabel[i] = iLabel
+        # End of for-loop
 
-        if(False == isFlatten):
-            mImage = mImage.reshape((self.__m_oDataset.iCols, self.__m_oDataset.iRows))
-        # End of if-condition
-
-        return mImage, iLabel
+        return mBatchImage, mLabel
     # End of myDatasetIterator::getExample
 
     def moveNext(self):
@@ -183,11 +187,11 @@ class myDatasetIterator:
         ======================================================
         Move the index to next item.
         """
-        if(self.__m_iIndex + 1 >= len(self.__m_viIndex)):
+        if(self.__m_iIndex + self.__m_iBatchSize >= len(self.__m_viIndex)):
             return
         # End of if-condition
 
-        self.__m_iIndex += 1
+        self.__m_iIndex += self.__m_iBatchSize
 # End of class myDatasetIterator
 
 def main():
@@ -198,11 +202,8 @@ def main():
     oIter.init()
     
     for i in range(oIter.iNumOfItems):
-        mImage, iLabel = oIter.getExample(False)
-        cv2.namedWindow("image", cv2.WINDOW_NORMAL)
-        cv2.imshow("image", mImage)
-        cv2.waitKey(1)
-        print("%08d: %d" %(i, iLabel))
+        mBatchImage, mLabel = oIter.getExample()
+        print("%08d: shape: %s, label: %d" %(i, str(mBatchImage.shape), mLabel[0]))
         oIter.moveNext()
     # End of for-loop
     return

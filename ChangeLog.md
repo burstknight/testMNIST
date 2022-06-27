@@ -8,6 +8,7 @@
 - Add the class `myDatasetIterator` to travel a whole dataset.
 
 ### Changed
+- Update the class `myDatasetIterator` for batch training.
 
 ### Fixed
 
