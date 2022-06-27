@@ -105,10 +105,106 @@ class myDataset:
     # End of myDataset::load
 # End of class myDataset
 
+class myDatasetIterator:
+    """
+    Description:
+    =========================================================
+    This class is an iterator that can travel whole dataset.
+    """
+    def __init__(self, oDataset:myDataset) -> None:
+        self.__m_oDataset = oDataset
+        self.__m_viIndex = []
+        self.__m_iIndex = 0
+    # End of constructor
+
+    @property
+    def iNumOfItems(self):
+        return self.__m_oDataset.iNumOfItems
+    # End of myDatasetIterator::iNumOfItems(getter)
+
+    def init(self, isShuffle:bool=True):
+        """
+        Description:
+        ======================================================
+        Initialize fields to travel dataset.
+
+        Args:
+        ======================================================
+        - isShuffle:    ptype: bool, this flag can control to shuffle the dataset or not.
+
+        Returns:
+        ======================================================
+        - rtype: void
+        """
+        self.__m_viIndex.clear()
+        for i in range(self.__m_oDataset.iNumOfItems):
+            self.__m_viIndex.append(i)
+        # End of for-loop
+
+        if(False == isShuffle):
+            return
+        # End of if-condition
+
+        for i in range(len(self.__m_viIndex)):
+            index = np.random.randint(0, self.__m_oDataset.iNumOfItems)
+            tmp = self.__m_viIndex[i]
+            self.__m_viIndex[i] = self.__m_viIndex[index]
+            self.__m_viIndex[index] = tmp
+        # End of for-loop
+    # End of myDatasetIterator::init
+
+    def getExample(self, isFlatten:bool=True) -> Tuple[np.ndarray, int]:
+        """
+        Description:
+        ======================================================
+        Get an example.
+
+        Args:
+        ======================================================
+        - isFlatten:    ptype: bool, this flag can control to return a 1D array of the image.
+
+        Returns: 
+        ======================================================
+        - rtype: np.ndarray, the image
+        - rtype: int, the label
+        """
+        mImage, iLabel = self.__m_oDataset.getItem(self.__m_viIndex[self.__m_iIndex])
+
+        if(False == isFlatten):
+            mImage = mImage.reshape((self.__m_oDataset.iCols, self.__m_oDataset.iRows))
+        # End of if-condition
+
+        return mImage, iLabel
+    # End of myDatasetIterator::getExample
+
+    def moveNext(self):
+        """
+        Description:
+        ======================================================
+        Move the index to next item.
+        """
+        if(self.__m_iIndex + 1 >= len(self.__m_viIndex)):
+            return
+        # End of if-condition
+
+        self.__m_iIndex += 1
+# End of class myDatasetIterator
+
 def main():
     strImagePath = "./dataset/train-images.idx3-ubyte"
     strLabelPath = "./dataset/train-labels.idx1-ubyte"
     oDataset = myDataset(strImagePath, strLabelPath)
+    oIter = myDatasetIterator(oDataset)
+    oIter.init()
+    
+    for i in range(oIter.iNumOfItems):
+        mImage, iLabel = oIter.getExample(False)
+        cv2.namedWindow("image", cv2.WINDOW_NORMAL)
+        cv2.imshow("image", mImage)
+        cv2.waitKey(1)
+        print("%08d: %d" %(i, iLabel))
+        oIter.moveNext()
+    # End of for-loop
     return
 # End of main
 
