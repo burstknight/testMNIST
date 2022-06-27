@@ -1,3 +1,4 @@
+from typing import Dict
 import numpy as np
 
 def sigmoid(x):
@@ -15,6 +16,37 @@ def softmax(x):
     y = exp_x / sum_exp_x
     return y
 # End of softmax
+
+def crossEntropyError(mY:np.ndarray, mT:np.ndarray):
+    if(mY.dim == 1):
+        mT = mT.reshape(1, mT.size)
+        mY = mY.reshape(1, mY.size)
+    # Endo f if-condition
+
+    iBatchSize = mY[0]
+    return -np.sum(np.log(mY[np.arange(iBatchSize), mT] + 1e-6))/iBatchSize
+# End of crossEntropyError
+
+def calcNumGradient(func, mX:np.ndarray):
+    fH = 1e-6
+    mGradient = np.zeros_like(mX)
+    for i in range(mX.size):
+        fTmpVal = mX[i]
+
+        # calculate f(x + h)
+        mX[i] = fTmpVal + fH
+        fDeltaY1 = func(mX)
+
+        # calculate f(x - h)
+        mX[i] = fTmpVal - fH
+        fDeltaY2 = func(mX)
+
+        mGradient = (fDeltaY1 - fDeltaY2)/(2*fH)
+        mX[i] = fTmpVal
+    # End of for-loop
+    
+    return mGradient
+# End of calcNumGradient
 
 class myNetwork:
     """
@@ -75,4 +107,53 @@ class myNetwork:
 
         return mY
     # End of myNetwork::predict
+
+    def calcLoss(self, mX:np.ndarray, mT:np.ndarray) -> float:
+        """
+        Description:
+        ==============================================
+        Calculate the loss for the given input data.
+
+        Args:
+        ==============================================
+        - mX:   ptype:  np.ndarray, (batch_size, 784), the input data
+        - mT:   ptype:  np.ndarray, (batchsize, ), the label of the input data
+
+        Returns:
+        ==============================================
+        - rtype: float, the current loss
+        """
+        mY = self.predict(mX)
+
+        return crossEntropyError(mY, mT)
+    # End of myNetwork::calcLoss
+
+    def calcNumGradient(self, mX:np.ndarray, mT:np.ndarray) -> Dict[str, np.ndarray]:
+        """
+        Description:
+        ===================================================================
+        Calculate the current gradient of the network weights with numerical
+        method.
+
+        Args:
+        ===================================================================
+        - mX:   ptype:  np.ndarray, (batch_size, 784), the input data
+        - mT:   ptype:  np.ndarray, (batchsize, ), the label of the input data
+
+        Returns:
+        ==============================================
+        - rtype: dict, the current gradient
+        """
+        loss_W = lambda W: self.calcLoss(mX, mT)
+
+        dctGradient = {}
+        dctGradient["w1"] = calcNumGradient(loss_W, self.__m_dctNetwork["w1"])
+        dctGradient["b1"] = calcNumGradient(loss_W, self.__m_dctNetwork["b1"])
+        dctGradient["w2"] = calcNumGradient(loss_W, self.__m_dctNetwork["w2"])
+        dctGradient["b2"] = calcNumGradient(loss_W, self.__m_dctNetwork["b2"])
+        dctGradient["w3"] = calcNumGradient(loss_W, self.__m_dctNetwork["w3"])
+        dctGradient["b3"] = calcNumGradient(loss_W, self.__m_dctNetwork["b3"])
+
+        return dctGradient
+    # End of myNetwork::calcNumGradient
 # End of class myNetwork
