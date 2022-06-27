@@ -1,3 +1,4 @@
+from typing import Tuple
 import numpy as np
 import cv2
 
@@ -26,6 +27,43 @@ class myDataset:
 
         self.__load(strImagePath, strLabelPath)
     # End of constructor
+
+    @property
+    def iRows(self):
+        return self.__m_iRows
+    # End of myDataset::iRows(getter)
+
+    @property
+    def iCols(self):
+        return self.__m_iCols
+    # End of myDataset::iCols(getter)
+
+    @property
+    def iNumOfItems(self):
+        return len(self.__m_vmImages)
+    # End of myDataset::iNumOfItems(getter)
+
+    def getItem(self, index:int) -> Tuple[np.ndarray, int]:
+        """
+        Description:
+        ============================================================
+        Get an item in the dataset.
+
+        Args:
+        ============================================================
+        - index:    ptype: int, the index of the item.
+
+        Returns:
+        ============================================================
+        - rtype: np.ndarray, the image
+        - rytpe: np.ndarray, the label
+        """
+        if(index >= self.iNumOfItems):
+            raise IndexError("The index is out of the range in myDataset::getItem(): %d >= %d" %(index, self.iNumOfItems))
+        # End of if-condition
+
+        return self.__m_vmImages[index], self.__m_viLabels[index]
+    # End of myDataset::getItem
 
     def __load(self, strImagePath:str, strLabelPath:str):
         """
