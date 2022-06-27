@@ -18,17 +18,19 @@ def softmax(x):
 # End of softmax
 
 def crossEntropyError(mY:np.ndarray, mT:np.ndarray):
-    if(mY.dim == 1):
+    if(mY.ndim == 1):
         mT = mT.reshape(1, mT.size)
         mY = mY.reshape(1, mY.size)
     # Endo f if-condition
 
-    iBatchSize = mY[0]
-    return -np.sum(np.log(mY[np.arange(iBatchSize), mT] + 1e-6))/iBatchSize
+    iBatchSize = mY.shape[0]
+    return -np.sum(np.log(mY[np.arange(iBatchSize), mT]))/iBatchSize
 # End of crossEntropyError
 
 def calcNumGradient(func, mX:np.ndarray):
     fH = 1e-6
+    vShape = mX.shape
+    mX = mX.reshape((mX.size, 1))
     mGradient = np.zeros_like(mX)
     for i in range(mX.size):
         fTmpVal = mX[i]
@@ -41,9 +43,12 @@ def calcNumGradient(func, mX:np.ndarray):
         mX[i] = fTmpVal - fH
         fDeltaY2 = func(mX)
 
-        mGradient = (fDeltaY1 - fDeltaY2)/(2*fH)
+        mGradient[i] = (fDeltaY1 - fDeltaY2)/(2*fH)
         mX[i] = fTmpVal
     # End of for-loop
+
+    mX = mX.reshape(vShape)
+    mGradient = mGradient.reshape(vShape)
     
     return mGradient
 # End of calcNumGradient
@@ -64,6 +69,11 @@ class myNetwork:
         self.__m_dctNetwork["b3"] = np.zeros((10, ), dtype="float32")
     # End of constructor
 
+    @property
+    def dctWeights(self) -> Dict[str, np.ndarray]:
+        return self.__m_dctNetwork
+    # End of myNetwork::dctWeights
+
     def initWeight(self):
         """
         Description:
@@ -71,8 +81,12 @@ class myNetwork:
         Initialize the wieghts for training.
         """
         for strKey in self.__m_dctNetwork.keys():
+            vPreShape = self.__m_dctNetwork[strKey].shape
+            self.__m_dctNetwork[strKey] = self.__m_dctNetwork[strKey].reshape((self.__m_dctNetwork[strKey].size, 1))
             for i in range(self.__m_dctNetwork[strKey].size):
-                self.__m_dctNetwork[strKey].data[i] = np.random.uniform(-1.0, 1.0)
+                self.__m_dctNetwork[strKey][i] = np.random.uniform(-1.0, 1.0)
+            # End of for-loop
+            self.__m_dctNetwork[strKey] = self.__m_dctNetwork[strKey].reshape(vPreShape)
         # End of for-loop
     # End of myNetwork::initWeight
 

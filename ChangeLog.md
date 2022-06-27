@@ -8,6 +8,7 @@
 - Add the class `myDatasetIterator` to travel a whole dataset.
 - Add the class `myNetwork` to predict.
 - Update the class `myNetwork` to calculate loss and gradient.
+- Update code for training.
 
 ### Changed
 - Update the class `myDatasetIterator` for batch training.
