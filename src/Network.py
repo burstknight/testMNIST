@@ -55,6 +55,146 @@ def calcNumGradient(func, mX:np.ndarray):
     return mGradient
 # End of calcNumGradient
 
+class myAffine:
+    """
+    Description:
+    =====================================
+    This class can perform forward and backward.
+    """
+    def __init__(self, mWeights:np.ndarray, mBias:np.ndarray) -> None:
+        self.__m_mWeights = mWeights
+        self.__m_mBias = mBias
+        self.__m_mX = None
+        self.__m_mDWeights = None
+        self.__m_mDBias = None
+    # End of constructor
+
+    @property
+    def mDeltaWeights(self):
+        return self.__m_mDWeights
+    # End of myAffine::mDeltaWeights
+
+    @property
+    def mDeltaBias(self):
+        return self.__m_mDBias
+    # End of myAffine::mDeltaBias
+
+    def forward(self, mX:np.ndarray):
+        """
+        Description:
+        ========================================
+        Perform forward.
+
+        Args:
+        ========================================
+        - mX:   ptype: np.ndarray, the input data
+
+        Returns:
+        ========================================
+        - rtype: np.ndarray, the result
+        """
+        self.__m_mX = mX
+        mOut = np.dot(mX, self.__m_mWeights) + self.__m_mBias
+
+        return mOut
+    # End of myAffine::forward
+
+    def backward(self, mDOut:np.ndarray):
+        """
+        Description:
+        ======================================
+        Use backward to calculate the current gradient.
+
+        Args:
+        ======================================
+        - mDOut:    ptype: np.ndarray, the result from forward.
+
+        Returns:
+        ======================================
+        - rtype: np.ndarray, the gradient of the input.
+        """
+        mDX = np.dot(mDOut, self.__m_mWeights.T)
+        self.__m_mDWeights = np.dot(self.__m_mX.T, mDOut)
+        self.__m_mDBias = np.sum(mDOut, axis=0)
+
+        return mDX
+    # End of myAffine::backward
+# End of class myAffine
+
+class Relu:
+    """
+    Description:
+    ================================
+    This class can perform Relu operation
+    """
+    def __init__(self) -> None:
+        self.__m_mMask = None
+    # End of constructor
+
+    def forward(self, mX:np.ndarray):
+        """
+        Description:
+        =====================================
+        Perform forward.
+
+        Args:
+        =====================================
+        - mX:   ptype: np.ndarray, the input data
+
+        Returns:
+        =====================================
+        - rtype: np.ndarray, the result of forward
+        """
+        self.__m_mMask = (mX <= 0)
+        mOut = mX.copy()
+        mOut[self.__m_mMask] = 0
+        return mOut
+    # End of Relu::forward
+
+    def backward(self, mDeltaOut:np.ndarray):
+        """
+        Description:
+        =====================================
+        Perform backward.
+
+        Args:
+        =====================================
+        - mDeltaOut:    ptype: np.ndarray, the delta output.
+
+        Args:
+        =====================================
+        - rtype: np.ndarray, the calculated delta input.
+        """
+        mDeltaOut[self.__m_mMask] = 0
+        mDeltaX = mDeltaOut
+
+        return mDeltaX
+    # End of Relu::backward
+# End of class Relu
+
+class mySoftmaxLoss:
+    def __init__(self) -> None:
+        self.__m_fLoss = None
+        self.__m_mY = None
+        self.__m_mLabel = None
+    # End of constructor
+
+    def forward(self, mX:np.ndarray, mT:np.ndarray):
+        self.__m_mLabel = mT
+        self.__m_mY = softmax(mX)
+        self.__m_fLoss = crossEntropyError(self.__m_mY, self.__m_mLabel)
+
+        return self.__m_fLoss
+    # End of mySoftmaxLoss::forward
+
+    def backward(self, dout=1):
+        iBatchSize = self.__m_mLabel.shape[0]
+        mDeltaX = (self.__m_mY - self.__m_mLabel)/iBatchSize
+
+        return mDeltaX
+    # End of mySoftmaxLoss::backward
+# End of class mySoftmaxLoss
+
 class myNetwork:
     """
     Description:
