@@ -15,5 +15,6 @@
 - Update the class `myDatasetIterator` for batch training.
 
 ### Fixed
+- Fixed the bug that the dataset iterator could not move next items.
 
 ### Removed

@@ -32,6 +32,8 @@ def train():
             oNetwork.dctWeights[strKey] -= fLearningRate*dctGradient[strKey]
         # End of for-loop
 
+        oIterator.moveNext()
+
         if(i % 100 == 0):
             print("Iterations: %8d, Loss: %.4f" %(i, oNetwork.calcLoss(mBatchImage, mLabel)))
         # End of if-conditon
