@@ -10,6 +10,7 @@
 - Update the class `myNetwork` to calculate loss and gradient.
 - Update code for training.
 - Update the class `myNetwork` to save and load network weights.
+- Update test code to save the final weights.
 
 ### Changed
 - Update the class `myDatasetIterator` for batch training.

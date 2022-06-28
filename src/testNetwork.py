@@ -38,6 +38,9 @@ def train():
             print("Iterations: %8d, Loss: %.4f" %(i, oNetwork.calcLoss(mBatchImage, mLabel)))
         # End of if-conditon
     # End of for-loop
+
+    oNetwork.save("model/model.pickle")
+    print("Finish!")
 # End of train
 
 def main():
