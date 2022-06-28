@@ -4,6 +4,7 @@
 ## [Unrelease]
 ### Added
 - Add classes for backward.
+- Implement backward training.
 
 ### Changed
 

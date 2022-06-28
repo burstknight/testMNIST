@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from typing import Dict
 import numpy as np
 import pickle
@@ -26,7 +27,7 @@ def crossEntropyError(mY:np.ndarray, mT:np.ndarray):
     # Endo f if-condition
 
     iBatchSize = mY.shape[0]
-    return -np.sum(np.log(mY[np.arange(iBatchSize), mT]))/iBatchSize
+    return -np.sum(mT*np.log(mY))/iBatchSize
 # End of crossEntropyError
 
 def calcNumGradient(func, mX:np.ndarray):
@@ -204,11 +205,16 @@ class myNetwork:
     def __init__(self) -> None:
         self.__m_dctNetwork = {}
         self.__m_dctNetwork["w1"] = np.zeros((784, 50), dtype="float32")
-        self.__m_dctNetwork["w2"] = np.zeros((50, 100), dtype="float32")
-        self.__m_dctNetwork["w3"] = np.zeros((100, 10), dtype="float32")
+        self.__m_dctNetwork["w2"] = np.zeros((50, 10), dtype="float32")
         self.__m_dctNetwork["b1"] = np.zeros((50, ), dtype="float32")
-        self.__m_dctNetwork["b2"] = np.zeros(((100, )), dtype="float32")
-        self.__m_dctNetwork["b3"] = np.zeros((10, ), dtype="float32")
+        self.__m_dctNetwork["b2"] = np.zeros(((10, )), dtype="float32")
+
+        self.__m_dctLayers = OrderedDict()
+        self.__m_dctLayers["affine1"] = myAffine(self.dctWeights["w1"], self.dctWeights["b1"])
+        self.__m_dctLayers["relu1"] = Relu()
+        self.__m_dctLayers["affine2"] = myAffine(self.dctWeights["w2"], self.dctWeights["b2"])
+
+        self.__m_oLastLayer = mySoftmaxLoss()
     # End of constructor
 
     @property
@@ -267,10 +273,14 @@ class myNetwork:
         Initialize the wieghts for training.
         """
         for strKey in self.__m_dctNetwork.keys():
+            if("b" in strKey):
+                continue
+            # End of if-condition
+
             vPreShape = self.__m_dctNetwork[strKey].shape
             self.__m_dctNetwork[strKey] = self.__m_dctNetwork[strKey].reshape((self.__m_dctNetwork[strKey].size, 1))
             for i in range(self.__m_dctNetwork[strKey].size):
-                self.__m_dctNetwork[strKey][i] = np.random.uniform(-1.0, 1.0)
+                self.__m_dctNetwork[strKey][i] = np.random.uniform()*0.01
             # End of for-loop
             self.__m_dctNetwork[strKey] = self.__m_dctNetwork[strKey].reshape(vPreShape)
         # End of for-loop
@@ -290,22 +300,11 @@ class myNetwork:
         ======================================================
         - rtype: np.ndarray, (batch_size, 10), the predicted result
         """
-        mW1 = self.__m_dctNetwork["w1"]
-        mW2 = self.__m_dctNetwork["w2"]
-        mW3 = self.__m_dctNetwork["w3"]
+        for oLayer in self.__m_dctLayers.values():
+            mX = oLayer.forward(mX)
+        # End of for-loop
 
-        b1 = self.__m_dctNetwork["b1"]
-        b2 = self.__m_dctNetwork["b2"]
-        b3 = self.__m_dctNetwork["b3"]
-
-        mA1 = np.dot(mX, mW1) + b1
-        mZ1 = sigmoid(mA1)
-        mA2 = np.dot(mZ1, mW2) + b2
-        mZ2 = sigmoid(mA2)
-        mA3 = np.dot(mZ2, mW3) + b3
-        mY = softmax(mA3)
-
-        return mY
+        return mX
     # End of myNetwork::predict
 
     def calcLoss(self, mX:np.ndarray, mT:np.ndarray) -> float:
@@ -325,7 +324,7 @@ class myNetwork:
         """
         mY = self.predict(mX)
 
-        return crossEntropyError(mY, mT)
+        return self.__m_oLastLayer.forward(mY, mT)
     # End of myNetwork::calcLoss
 
     def calcNumGradient(self, mX:np.ndarray, mT:np.ndarray) -> Dict[str, np.ndarray]:
@@ -351,9 +350,44 @@ class myNetwork:
         dctGradient["b1"] = calcNumGradient(loss_W, self.__m_dctNetwork["b1"])
         dctGradient["w2"] = calcNumGradient(loss_W, self.__m_dctNetwork["w2"])
         dctGradient["b2"] = calcNumGradient(loss_W, self.__m_dctNetwork["b2"])
-        dctGradient["w3"] = calcNumGradient(loss_W, self.__m_dctNetwork["w3"])
-        dctGradient["b3"] = calcNumGradient(loss_W, self.__m_dctNetwork["b3"])
 
         return dctGradient
     # End of myNetwork::calcNumGradient
+
+    def calcGradient(self, mX:np.ndarray, mT:np.ndarray):
+        """
+        Description:
+        ==========================================
+        Use backford to calculate gradient.
+
+        Args:
+        ==========================================
+        - mX:   ptype:  np.ndarray, (batch_size, 784), the input data
+        - mT:   ptype:  np.ndarray, (batchsize, ), the label of the input data
+
+        Returns:
+        ==============================================
+        - rtype: dict, the current gradient
+        """
+        # forward
+        self.calcLoss(mX, mT)
+
+        # backward
+        dout = 1
+        dout = self.__m_oLastLayer.backward(dout)
+
+        voLayers = list(self.__m_dctLayers.values())
+        voLayers.reverse()
+        for oLayer in voLayers:
+            dout = oLayer.backward(dout)
+        # End of for-loop
+
+        dctGradient = {}
+        dctGradient["w1"] = self.__m_dctLayers["affine1"].mDeltaWeights
+        dctGradient["b1"] = self.__m_dctLayers["affine1"].mDeltaBias
+        dctGradient["w2"] = self.__m_dctLayers["affine2"].mDeltaWeights
+        dctGradient["b2"] = self.__m_dctLayers["affine2"].mDeltaBias
+
+        return dctGradient
+    # End of myNetwork::calcGradient
 # End of class myNetwork

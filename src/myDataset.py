@@ -171,11 +171,11 @@ class myDatasetIterator:
         - rtype: np.ndarray, the batch labels
         """
         mBatchImage = np.zeros((self.__m_iBatchSize, self.__m_oDataset.iCols*self.__m_oDataset.iRows), dtype="uint8")
-        mLabel = np.zeros((self.__m_iBatchSize, ), dtype="uint8")
+        mLabel = np.zeros((self.__m_iBatchSize, 10), dtype="uint8")
         for i in range(self.__m_iBatchSize):
             mImage, iLabel = self.__m_oDataset.getItem(self.__m_viIndex[self.__m_iIndex + i])
             mBatchImage[i, :] = mImage 
-            mLabel[i] = iLabel
+            mLabel[i, iLabel] = 1
         # End of for-loop
 
         return mBatchImage, mLabel

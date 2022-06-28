@@ -8,7 +8,7 @@ def train():
 
     iMaxEpochs = 12000
     iBatchSize = 100
-    fLearningRate = 0.01
+    fLearningRate = 0.001
 
     oDataset = myDataset(strTrainImagePath, strTrainLabelPath)
     oIterator = myDatasetIterator(oDataset, iBatchSize)
@@ -23,20 +23,22 @@ def train():
         mBatchImage, mLabel = oIterator.getExample()
         mInput = mBatchImage.astype("float32")
         mInput /= 255.0
+        mLabel = mLabel.astype("float32")
 
         # calculage gradient
-        dctGradient = oNetwork.calcNumGradient(mInput, mLabel)
+        dctGradient = oNetwork.calcGradient(mInput.copy(), mLabel)
 
         # update network weights
         for strKey in oNetwork.dctWeights.keys():
             oNetwork.dctWeights[strKey] -= fLearningRate*dctGradient[strKey]
         # End of for-loop
 
-        oIterator.moveNext()
 
         if(i % 100 == 0):
-            print("Iterations: %8d, Loss: %.4f" %(i, oNetwork.calcLoss(mBatchImage, mLabel)))
+            print("Iterations: %8d, Loss: %.4f" %(i, oNetwork.calcLoss(mInput.copy(), mLabel)))
         # End of if-conditon
+
+        oIterator.moveNext()
     # End of for-loop
 
     oNetwork.save("model/model.pickle")
