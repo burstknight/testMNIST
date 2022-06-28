@@ -3,6 +3,16 @@
 -------------------------
 ## [Unrelease]
 ### Added
+
+### Changed
+
+### Fixed
+
+### Removed
+
+-------------------------
+## [1.0.0] - 2022/06/28
+### Added
 - Implement method `myDataset::load()` to load mnist dataset.
 - Add method into the class `myDataset` to get the fields.
 - Add the class `myDatasetIterator` to travel a whole dataset.
@@ -17,5 +27,3 @@
 
 ### Fixed
 - Fixed the bug that the dataset iterator could not move next items.
-
-### Removed
