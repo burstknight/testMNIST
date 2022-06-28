@@ -9,6 +9,7 @@
 - Add the class `myNetwork` to predict.
 - Update the class `myNetwork` to calculate loss and gradient.
 - Update code for training.
+- Update the class `myNetwork` to save and load network weights.
 
 ### Changed
 - Update the class `myDatasetIterator` for batch training.

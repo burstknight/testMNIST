@@ -3,6 +3,11 @@
 
 # Skip dataset
 dataset/* 
+
+# Skip model
+model/*
+*.pickle
+
 ### C ###
 # Prerequisites
 *.d

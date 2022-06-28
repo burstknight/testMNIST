@@ -1,5 +1,7 @@
 from typing import Dict
 import numpy as np
+import pickle
+from os.path import isfile
 
 def sigmoid(x):
     return 1/(1 + np.exp(-x))
@@ -73,6 +75,50 @@ class myNetwork:
     def dctWeights(self) -> Dict[str, np.ndarray]:
         return self.__m_dctNetwork
     # End of myNetwork::dctWeights
+
+    def save(self, strPath:str):
+        """
+        Description:
+        ========================================================
+        Save network weights.
+
+        Args:
+        ========================================================
+        - strPath:  ptype: str, the path to store network weights.
+
+        Returns:
+        ========================================================
+        - rtype: void
+        """
+        with open(strPath, "wb") as oWriter:
+            pickle.dump(self.dctWeights, oWriter)
+        # End of with-block
+    # End of myNetwork::save
+
+    def load(self, strPath:str):
+        """
+        Description:
+        =========================================================
+        Load network weights.
+
+        Args:
+        =========================================================
+        - strPath:  ptype: str, the weights file path
+
+        Returns:
+        =========================================================
+        - rtype: bool, return True if succeed to load weights, otherwise return False
+        """
+        if(False == isfile(strPath)):
+            return False
+        # End of if-condition
+
+        with open(strPath, "rb") as oReader:
+            self.dctWeights = pickle.load(oReader)
+        # End of with-block
+
+        return True
+    #  End of myNetwork::load
 
     def initWeight(self):
         """
