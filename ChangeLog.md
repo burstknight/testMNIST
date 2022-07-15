@@ -5,6 +5,7 @@
 ### Added
 - Add classes for backward.
 - Implement backward training.
+- Update the method `myNetwork::initWeight()` to reduce the initialized weights.
 
 ### Changed
 

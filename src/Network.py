@@ -27,7 +27,7 @@ def crossEntropyError(mY:np.ndarray, mT:np.ndarray):
     # Endo f if-condition
 
     iBatchSize = mY.shape[0]
-    return -np.sum(mT*np.log(mY))/iBatchSize
+    return -np.sum(mT*np.log(mY + 1e-6))/iBatchSize
 # End of crossEntropyError
 
 def calcNumGradient(func, mX:np.ndarray):
@@ -280,7 +280,7 @@ class myNetwork:
             vPreShape = self.__m_dctNetwork[strKey].shape
             self.__m_dctNetwork[strKey] = self.__m_dctNetwork[strKey].reshape((self.__m_dctNetwork[strKey].size, 1))
             for i in range(self.__m_dctNetwork[strKey].size):
-                self.__m_dctNetwork[strKey][i] = np.random.uniform()*0.01
+                self.__m_dctNetwork[strKey][i] = np.random.uniform()*0.001
             # End of for-loop
             self.__m_dctNetwork[strKey] = self.__m_dctNetwork[strKey].reshape(vPreShape)
         # End of for-loop
