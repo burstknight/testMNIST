@@ -280,7 +280,7 @@ class myNetwork:
             vPreShape = self.__m_dctNetwork[strKey].shape
             self.__m_dctNetwork[strKey] = self.__m_dctNetwork[strKey].reshape((self.__m_dctNetwork[strKey].size, 1))
             for i in range(self.__m_dctNetwork[strKey].size):
-                self.__m_dctNetwork[strKey][i] = np.random.uniform()*0.001
+                self.__m_dctNetwork[strKey][i] = np.random.uniform(1e-6, 1.0)*0.001
             # End of for-loop
             self.__m_dctNetwork[strKey] = self.__m_dctNetwork[strKey].reshape(vPreShape)
         # End of for-loop
@@ -306,6 +306,33 @@ class myNetwork:
 
         return mX
     # End of myNetwork::predict
+
+    def calcRecall(self, mX:np.ndarray, mT:np.ndarray) -> float:
+        """
+        Description:
+        =====================================================
+        Calculate recall
+
+        Args:
+        =====================================================
+        - mX:   ptype: np.ndarray, (batch_size), the input data
+        - mT:   ptype: np.ndarray, (batch_size), the labels of the input data
+
+        Returns:
+        =====================================================
+        - rtype: float, the recall of the input data
+        """
+        mY = self.predict(mX)
+        iTP = 0
+        for i in range(mY.shape[0]):
+            iY = np.argmax(mY[i])
+            if(iY == np.argmax(mT[i])):
+                iTP += 1
+            # End of if-conditon
+        # End of for-loop
+
+        return iTP/mT.shape[0]
+    # End of calcRecall
 
     def calcLoss(self, mX:np.ndarray, mT:np.ndarray) -> float:
         """

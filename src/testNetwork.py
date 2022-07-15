@@ -6,13 +6,13 @@ def train():
     strTrainImagePath = "./dataset/train-images.idx3-ubyte"
     strTrainLabelPath = "./dataset/train-labels.idx1-ubyte"
 
-    iMaxEpochs = 10000
+    iMaxEpochs = 12000
     iBatchSize = 100
-    fLearningRate = 0.00005
+    fLearningRate = 0.0002
     fGamma = 0.1
     fMomentom = 0.9
 
-    viSteps = (6000, 9200)
+    viSteps = (8400, 10800)
 
     oDataset = myDataset(strTrainImagePath, strTrainLabelPath)
     oIterator = myDatasetIterator(oDataset, iBatchSize)
@@ -46,7 +46,9 @@ def train():
 
 
         if(i % 100 == 0):
-            print("Iterations: %8d, Learning rate: %.8f, Loss: %.6f" %(i, fLearningRate, oNetwork.calcLoss(mInput.copy(), mLabel)))
+            print("Iterations: %8d, Learning rate: %.6f, Loss: %.6f, Recall: %.3f" \
+                %(i, fLearningRate, oNetwork.calcLoss(mInput.copy(), mLabel), 
+                oNetwork.calcRecall(mInput.copy(), mLabel)))
         # End of if-conditon
 
         if(i in viSteps):
