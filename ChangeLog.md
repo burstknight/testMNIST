@@ -6,6 +6,7 @@
 - Add classes for backward.
 - Implement backward training.
 - Update the method `myNetwork::initWeight()` to reduce the initialized weights.
+- Implement momentum SGD.
 
 ### Changed
 
